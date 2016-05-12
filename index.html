@@ -17,7 +17,53 @@
 
     <section class="main-content">
       <h1>
-<a id="tkodgithubio" class="anchor" href="#tkodgithubio" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>tkod.github.io</h1>
+<a id="ios获取wifi热点信息" class="anchor" href="#ios%E8%8E%B7%E5%8F%96wifi%E7%83%AD%E7%82%B9%E4%BF%A1%E6%81%AF" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>ios获取wifi热点信息</h1>
+
+<p>工作遇到需要识别连接固定wifi热点，并获取该热点的BSSID的需求。记得以前搞过这个需求，于是直接用 Captive Network 来搞了。实现方法如下：  </p>
+
+<pre><code>+ (NSString *)currentWifiBSSID
+{
+    NSString *bssid = nil;
+    NSArray *ifs = (__bridge   id)CNCopySupportedInterfaces();
+    for (NSString *ifname in ifs) {
+        NSDictionary *info = (__bridge id)CNCopyCurrentNetworkInfo((__bridge CFStringRef)ifname);
+        if (info[@"BSSID"])
+        {
+            bssid = info[@"BSSID"];
+        }
+    }
+    return bssid;
+} 
+</code></pre>
+
+<p>这个方法在ios9之前一直是work的，但郁闷的是在ios9+上 Captive Network 里面的方法全都 <strong>Deprecated</strong>，瞬间有种抓狂的感觉。  </p>
+
+<hr>
+
+<p>后来在网上一番搜索，发现需要NEHotspotHelper APIs使用权限的entitlement。见<a href="http://stackoverflow.com/questions/31555640/how-to-get-wifi-ssid-in-ios9-after-captivenetwork-is-depracted-and-calls-for-wif">http://stackoverflow.com/questions/31555640/how-to-get-wifi-ssid-in-ios9-after-captivenetwork-is-depracted-and-calls-for-wif</a> 。</p>
+
+<p>于是跟apple 申请... 得到回复如下：  </p>
+
+<blockquote>
+<p>Hello, </p>
+
+<p>Thank you for your interest in the Network Extension framework. Unfortunately, these APIs are not designed for the use you’ve identified. We’ll let you know if that changes. </p>
+
+<p>The NEHotspotHelper APIs are meant to be used by hotspot network implementers to facilitate connections to known wireless networks that they manage. 
+...
+If your app needs to verify or retrieve information about the currently connected WiFi network, the following Captive Network APIs, while deprecated, have been re-enabled in iOS 9 instead. </p>
+
+<ul>
+<li>CNCopySupportedInterfaces </li>
+<li>CNCopyCurrentNetworkInfo </li>
+</ul>
+
+<p><a href="https://developer.apple.com/library/ios/documentation/SystemConfiguration/Reference/CaptiveNetworkRef/">https://developer.apple.com/library/ios/documentation/SystemConfiguration/Reference/CaptiveNetworkRef/</a> </p>
+
+<p>Please visit developer.apple.com to download the latest build.   </p>
+</blockquote>
+
+<p>得到提示，升级xcode到最新版本，再build，果然可以在ios9.0+ 的系统上拿到BSSID号了。</p>
 
       <footer class="site-footer">
 
